@@ -1,7 +1,7 @@
 {
   "name": "linter-mzn",
   "main": "./lib/init",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A linter for your MiniZinc models in Atom using mzn2fzn",
   "keywords": [],
   "repository": "https://github.com/Dekker1/linter-mzn",
