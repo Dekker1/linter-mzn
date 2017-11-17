@@ -1,10 +1,9 @@
 {
   "name": "linter-mzn",
   "main": "./lib/init",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A linter for your MiniZinc models in Atomm using mzn2fzn",
-  "keywords": [
-  ],
+  "keywords": [],
   "repository": "https://github.com/Dekker1/linter-mzn",
   "license": "MIT",
   "engines": {
