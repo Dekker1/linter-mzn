@@ -1,39 +1,38 @@
 {BufferedProcess} = require 'atom'
+{CompositeDisposable} = require 'atom'
+
+atomLinter = require 'atom-linter'
 
 class LinterMZN
-  lintProcess: null
 
-  config: (key) ->
-    atom.config.get "language-mzn.#{key}"
+  constructor: ->
+    @subscriptions = new CompositeDisposable
+
+    @subscriptions.add atom.config.observe 'linter-mzn.compilerPath',
+    (compilerPath) =>
+      @compilerPath = compilerPath
 
   lint: (textEditor) =>
-    if @config 'enableLinter'
-      return new Promise (resolve, reject) =>
-        output = ''
-        command = @config 'mzn2fznPath'
-        args = ['--instance-check-only', textEditor.getPath()]
-        options = process.env
+    command = @compilerPath
+    args = ['--instance-check-only', textEditor.getPath()]
+    options =
+      timeout: 10000
+      env: process.env
+      stream: 'both'
 
-        stdout = (data) ->
-          atom.notifications.addWarning data
-        stderr = (data) ->
-          output += data
-        exit = (code) =>
-          if code is 0
-            resolve []
-          else
-            messages = @parse output, textEditor.getPath()
-            resolve messages
-
-        @lintProcess = new BufferedProcess({command, args, options, stdout, stderr, exit})
-        @lintProcess.onWillThrowError ({error, handle}) ->
-          atom.notifications.addError "Failed to run #{command}",
-            detail: "#{error.message}"
-            dismissable: true
-          handle()
-          resolve []
-    else
-      return []
+    atomLinter.exec(@compilerPath, args, options)
+      .then (result) =>
+        {stdout, stderr, exit} = result
+        if exit is 0
+          []
+        else
+          @parse stderr, textEditor.getPath()
+      .catch (error) ->
+        console.log error
+        atom.notifications.addError "Failed to run #{command}",
+          detail: "#{error.message}"
+          dismissable: true
+        []
 
   parse: (output, filePath) =>
     messages = []
