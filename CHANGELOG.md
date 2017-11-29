@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.1.2]
+### Fixes
+- Errors made in included files will now be correctly located
+
 ## [0.1.1] - 2017-11-17
 ### Fixes
 - Small fixes to documentation and package definition

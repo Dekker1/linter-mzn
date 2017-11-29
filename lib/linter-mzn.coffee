@@ -23,10 +23,11 @@ class LinterMZN
     atomLinter.exec(@compilerPath, args, options)
       .then (result) =>
         {stdout, stderr, exit} = result
+        console.log stderr
         if exit is 0
           []
         else
-          @parse stderr, textEditor.getPath()
+          @parse stderr
       .catch (error) ->
         console.log error
         atom.notifications.addError "Failed to run #{command}",
@@ -34,7 +35,7 @@ class LinterMZN
           dismissable: true
         []
 
-  parse: (output, filePath) =>
+  parse: (output) =>
     messages = []
     output = output.split('\n')
     warningLines = (i for line, i in output when /:([0-9]+):/.test(line) && ! /(did you forget to specify a data file\?)/.test(output[i+1]))
@@ -42,14 +43,16 @@ class LinterMZN
     i = 0
     while i < warningLines.length
       if i >= warningLines.length - 1
-        messages.push @generateMessage output[warningLines[i]..], filePath
+        messages.push @generateMessage output[warningLines[i]..]
       else
-        messages.push @generateMessage output[warningLines[i]..warningLines[i+1]-1], filePath
+        messages.push @generateMessage output[warningLines[i]..warningLines[i+1]-1]
       i++
 
     return messages
 
-  generateMessage: (output, filePath) ->
+  generateMessage: (output) ->
+    file = output[0].match(/^[^:]*/)[0]
+    console.log file
     match = output[0].match(/:([0-9]+):/)
     line = parseInt(match[1])
     output = output[1..]
@@ -63,9 +66,9 @@ class LinterMZN
 
     message = {
       severity: 'error',
-      excerpt: output.join('\n').replace(/MiniZinc: /, ""),
+      excerpt: output.join('\n').replace(/MiniZinc: /, "").replace(/Error: /, ""),
       location:{
-        file: filePath,
+        file: file,
         position: [[line-1,startcol], [line-1,endcol]],
       }
     }
